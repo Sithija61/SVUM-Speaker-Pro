@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SVUM Speaker Pro</title>
+<style>
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    padding: 20px;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: white;
+}
+
+.container {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    padding: 40px;
+    border-radius: 20px;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+    max-width: 600px;
+    width: 100%;
+    text-align: center;
+    color: #333;
+    animation: slideUp 0.5s ease-out;
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+h1 {
+    margin-bottom: 30px;
+    color: #667eea;
+    font-size: 2.5em;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+}
+
+.text-container {
+    position: relative;
+    margin-bottom: 20px;
+}
+
+textarea {
+    width: 100%;
+    padding: 20px;
+    height: 180px;
+    resize: vertical;
+    border: 2px solid #667eea;
+    border-radius: 15px;
+    font-size: 16px;
+    font-family: inherit;
+    transition: all 0.3s ease;
+    background: rgba(255, 255, 255, 0.9);
+}
+
+textarea:focus {
+    outline: none;
+    border-color: #764ba2;
+    box-shadow: 0 0 15px rgba(102, 126, 234, 0.3);
+    transform: scale(1.02);
+}
+
+.char-count {
+    position: absolute;
+    bottom: 10px;
+    right: 15px;
+    font-size: 12px;
+    color: #888;
+    background: rgba(255, 255, 255, 0.8);
+    padding: 2px 6px;
+    border-radius: 10px;
+}
+
+.controls {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 15px;
+    margin-bottom: 25px;
+}
+
+.control-group {
+    text-align: left;
+}
+
+.control-group label {
+    display: block;
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 5px;
+    color: #555;
+}
+
+input[type="range"] {
+    width: 100%;
+    height: 6px;
+    border-radius: 3px;
+    background: #ddd;
+    outline: none;
+    -webkit-appearance: none;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: #667eea;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+input[type="range"]::-webkit-slider-thumb:hover {
+    background: #764ba2;
+    transform: scale(1.2);
+}
+
+select {
+    width: 100%;
+    padding: 8px;
+    border: 2px solid #667eea;
+    border-radius: 8px;
+    font-size: 14px;
+    background: white;
+    cursor: pointer;
+}
+
+.button-group {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+button {
+    background: linear-gradient(45deg, #667eea, #764ba2);
+    color: white;
+    border: none;
+    padding: 15px 25px;
+    font-size: 16px;
+    font-weight: 600;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    min-width: 120px;
+}
+
+button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+}
+
+button:active {
+    transform: translateY(0);
+}
+
+button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.stop-btn {
+    background: linear-gradient(45deg, #ff6b6b, #ee5a52);
+}
+
+.stop-btn:hover {
+    box-shadow: 0 8px 20px rgba(255, 107, 107, 0.4);
+}
+
+.clear-btn {
+    background: linear-gradient(45deg, #74b9ff, #0984e3);
+}
+
+.clear-btn:hover {
+    box-shadow: 0 8px 20px rgba(116, 185, 255, 0.4);
+}
+
+.status {
+    margin: 20px 0;
+    padding: 12px;
+    border-radius: 10px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    opacity: 0;
+}
+
+.status.show {
+    opacity: 1;
+}
+
+.status.speaking {
+    background: linear-gradient(45deg, #00b894, #00a085);
+    color: white;
+}
+
+.status.ready {
+    background: linear-gradient(45deg, #fdcb6e, #e17055);
+    color: white;
+}
+
+.quick-samples {
+    margin-top: 25px;
+    text-align: left;
+}
+
+.quick-samples h3 {
+    color: #667eea;
+    margin-bottom: 10px;
+    font-size: 1.1em;
+}
+
+.sample-btn {
+    background: rgba(102, 126, 234, 0.1);
+    color: #667eea;
+    border: 1px solid #667eea;
+    padding: 8px 12px;
+    margin: 5px;
+    font-size: 12px;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: inline-block;
+}
+
+.sample-btn:hover {
+    background: #667eea;
+    color: white;
+    transform: translateY(-1px);
+}
+
+.footer {
+    margin-top: 30px;
+    font-size: 14px;
+    color: #888;
+    font-weight: 500;
+}
+
+.progress-bar {
+    width: 100%;
+    height: 4px;
+    background: #ddd;
+    border-radius: 2px;
+    margin: 10px 0;
+    overflow: hidden;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.progress-bar.show {
+    opacity: 1;
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(45deg, #667eea, #764ba2);
+    border-radius: 2px;
+    width: 0%;
+    transition: width 0.3s ease;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
+}
+
+@media (max-width: 600px) {
+    .container {
+        padding: 25px;
+        margin: 10px;
+    }
+    
+    h1 {
+        font-size: 2em;
+    }
+    
+    .controls {
+        grid-template-columns: 1fr;
+    }
+    
+    .button-group {
+        flex-direction: column;
+    }
+    
+    button {
+        width: 100%;
+    }
+}
+</style>
+</head>
+<body>
+<div class="container">
+    <h1>🔊 SVUM Speaker Pro</h1>
+    
+    <div class="text-container">
+        <textarea id="text" placeholder="Type or paste your text here... You can also try the sample texts below!"></textarea>
+        <div class="char-count" id="charCount">0 characters</div>
+    </div>
+    
+    <div class="controls">
+        <div class="control-group">
+            <label for="rate">Speed: <span id="rateValue">1.0x</span></label>
+            <input type="range" id="rate" min="0.5" max="2.0" step="0.1" value="1.0">
+        </div>
+        
+        <div class="control-group">
+            <label for="pitch">Pitch: <span id="pitchValue">1.0</span></label>
+            <input type="range" id="pitch" min="0.5" max="2.0" step="0.1" value="1.0">
+        </div>
+        
+        <div class="control-group">
+            <label for="volume">Volume: <span id="volumeValue">100%</span></label>
+            <input type="range" id="volume" min="0" max="1" step="0.1" value="1.0">
+        </div>
+        
+        <div class="control-group">
+            <label for="voice">Voice:</label>
+            <select id="voice">
+                <option value="">Default Voice</option>
+            </select>
+        </div>
+    </div>
+    
+    <div class="progress-bar" id="progressBar">
+        <div class="progress-fill" id="progressFill"></div>
+    </div>
+    
+    <div class="status" id="status">Ready to speak!</div>
+    
+    <div class="button-group">
+        <button onclick="speakText()" id="speakBtn">
+            🔊 Speak
+        </button>
+        <button onclick="pauseResume()" id="pauseBtn" class="clear-btn" disabled>
+            ⏸️ Pause
+        </button>
+        <button onclick="stopSpeaking()" id="stopBtn" class="stop-btn" disabled>
+            ⏹️ Stop
+        </button>
+        <button onclick="clearText()" class="clear-btn">
+            🗑️ Clear
+        </button>
+    </div>
+    
+    <div class="quick-samples">
+        <h3>📝 Quick Sample Texts:</h3>
+        <span class="sample-btn" onclick="loadSample('hello')">Hello World</span>
+        <span class="sample-btn" onclick="loadSample('lorem')">Lorem Ipsum</span>
+        <span class="sample-btn" onclick="loadSample('quote')">Inspirational Quote</span>
+        <span class="sample-btn" onclick="loadSample('tech')">Tech News</span>
+    </div>
+    
+    <div class="footer">
+        ✨ Developed by SVUM - Advanced Text-to-Speech Tool
+    </div>
+</div>
+
+<script>
+let currentUtterance = null;
+let isPaused = false;
+let voices = [];
+let isSpeaking = false;
+let speechActive = false;
+
+// Sample texts
+const samples = {
+    hello: "Hello! Welcome to SVUM Speaker Pro. This is an advanced text-to-speech application that can read any text with customizable voice settings.",
+    lorem: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris.",
+    quote: "The future belongs to those who believe in the beauty of their dreams. Success is not final, failure is not fatal: it is the courage to continue that counts.",
+    tech: "Artificial Intelligence and machine learning are revolutionizing the way we interact with technology. Voice synthesis has become incredibly sophisticated, enabling natural-sounding speech from text."
+};
+
+// Initialize
+window.addEventListener('load', function() {
+    loadVoices();
+    updateCharCount();
+    showStatus('Ready to speak!', 'ready');
+    
+    // Update slider values
+    document.getElementById('rate').addEventListener('input', updateRateValue);
+    document.getElementById('pitch').addEventListener('input', updatePitchValue);
+    document.getElementById('volume').addEventListener('input', updateVolumeValue);
+    document.getElementById('text').addEventListener('input', updateCharCount);
+});
+
+function loadVoices() {
+    voices = speechSynthesis.getVoices();
+    const voiceSelect = document.getElementById('voice');
+    voiceSelect.innerHTML = '<option value="">Default Voice</option>';
+    
+    voices.forEach((voice, index) => {
+        const option = document.createElement('option');
+        option.value = index;
+        option.textContent = `${voice.name} (${voice.lang})`;
+        voiceSelect.appendChild(option);
+    });
+}
+
+// Load voices when they become available
+speechSynthesis.addEventListener('voiceschanged', loadVoices);
+
+function updateCharCount() {
+    const text = document.getElementById('text').value;
+    document.getElementById('charCount').textContent = `${text.length} characters`;
+}
+
+function updateRateValue() {
+    const rate = document.getElementById('rate').value;
+    document.getElementById('rateValue').textContent = `${rate}x`;
+}
+
+function updatePitchValue() {
+    const pitch = document.getElementById('pitch').value;
+    document.getElementById('pitchValue').textContent = pitch;
+}
+
+function updateVolumeValue() {
+    const volume = document.getElementById('volume').value;
+    document.getElementById('volumeValue').textContent = `${Math.round(volume * 100)}%`;
+}
+
+function showStatus(message, type = '') {
+    const status = document.getElementById('status');
+    status.textContent = message;
+    status.className = `status show ${type}`;
+    
+    setTimeout(() => {
+        status.classList.remove('show');
+    }, 3000);
+}
+
+function showProgress() {
+    document.getElementById('progressBar').classList.add('show');
+}
+
+function hideProgress() {
+    document.getElementById('progressBar').classList.remove('show');
+}
+
+function speakText() {
+    const text = document.getElementById('text').value.trim();
+    
+    if (text === "") {
+        showStatus('Please enter some text to speak!', 'ready');
+        document.getElementById('text').focus();
+        return;
+    }
+    
+    // If paused, resume instead of starting new
+    if (isPaused && currentUtterance) {
+        pauseResume();
+        return;
+    }
+    
+    // Stop any current speech
+    speechSynthesis.cancel();
+    
+    // Create new utterance
+    currentUtterance = new SpeechSynthesisUtterance(text);
+    
+    // Apply settings
+    currentUtterance.rate = parseFloat(document.getElementById('rate').value);
+    currentUtterance.pitch = parseFloat(document.getElementById('pitch').value);
+    currentUtterance.volume = parseFloat(document.getElementById('volume').value);
+    
+    // Apply selected voice
+    const voiceIndex = document.getElementById('voice').value;
+    if (voiceIndex !== "" && voices[voiceIndex]) {
+        currentUtterance.voice = voices[voiceIndex];
+    }
+    
+    // Event listeners
+    currentUtterance.onstart = function() {
+        isSpeaking = true;
+        speechActive = true;
+        showStatus('Speaking...', 'speaking');
+        showProgress();
+        document.getElementById('speakBtn').disabled = true;
+        document.getElementById('pauseBtn').disabled = false;
+        document.getElementById('stopBtn').disabled = false;
+        document.getElementById('pauseBtn').innerHTML = '⏸️ Pause';
+        isPaused = false;
+    };
+    
+    currentUtterance.onend = function() {
+        isSpeaking = false;
+        speechActive = false;
+        showStatus('Finished speaking!', 'ready');
+        hideProgress();
+        resetButtons();
+    };
+    
+    currentUtterance.onerror = function(event) {
+        isSpeaking = false;
+        speechActive = false;
+        showStatus('Error occurred while speaking!', 'ready');
+        hideProgress();
+        resetButtons();
+    };
+    
+    // Start speaking
+    speechSynthesis.speak(currentUtterance);
+}
+
+function pauseResume() {
+    if (!speechActive) return;
+    
+    if (isPaused) {
+        speechSynthesis.resume();
+        document.getElementById('pauseBtn').innerHTML = '⏸️ Pause';
+        showStatus('Resumed speaking...', 'speaking');
+        isPaused = false;
+    } else {
+        speechSynthesis.pause();
+        document.getElementById('pauseBtn').innerHTML = '▶️ Resume';
+        showStatus('Paused', 'ready');
+        isPaused = true;
+    }
+}
+
+function stopSpeaking() {
+    if (!speechActive) return;
+    
+    speechSynthesis.cancel();
+    showStatus('Stopped speaking', 'ready');
+    hideProgress();
+    resetButtons();
+    isPaused = false;
+    isSpeaking = false;
+    speechActive = false;
+}
+
+function resetButtons() {
+    document.getElementById('speakBtn').disabled = false;
+    document.getElementById('pauseBtn').disabled = true;
+    document.getElementById('stopBtn').disabled = true;
+    document.getElementById('pauseBtn').innerHTML = '⏸️ Pause';
+    isPaused = false;
+}
+
+function clearText() {
+    document.getElementById('text').value = '';
+    updateCharCount();
+    showStatus('Text cleared!', 'ready');
+    
+    // Stop speaking if active
+    if (isSpeaking) {
+        stopSpeaking();
+    }
+}
+
+function loadSample(type) {
+    if (samples[type]) {
+        document.getElementById('text').value = samples[type];
+        updateCharCount();
+        showStatus(`Loaded ${type} sample text!`, 'ready');
+    }
+}
+
+// Keyboard shortcuts
+document.addEventListener('keydown', function(event) {
+    // Ctrl/Cmd + Enter to speak
+    if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') {
+        event.preventDefault();
+        speakText();
+    }
+    
+    // Escape to stop
+    if (event.key === 'Escape' && isSpeaking) {
+        event.preventDefault();
+        stopSpeaking();
+    }
+    
+    // Space to pause/resume when speaking
+    if (event.key === ' ' && isSpeaking) {
+        event.preventDefault();
+        pauseResume();
+    }
+});
+</script>
+</body>
+</html>
